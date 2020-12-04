@@ -2,6 +2,17 @@ import networkx as nx
 from networkx.algorithms import chains, components
 
 
+def to_unweighted(dg):
+    unweight_dg = dg.copy()
+    edges = []
+    for edge in unweight_dg.edges():
+        edges.append(
+            (edge[0], edge[1], {'weight': 1})
+        )
+    unweight_dg.update(edges=edges)
+    return unweight_dg
+
+
 def get_n_entry(dg):
     return dict(dg.in_degree())
 
@@ -83,3 +94,69 @@ def get_degree_expansion(dg):
     for node in dg.nodes():
         expansion_dict[node] = len(nx.shortest_path(dg, node))-1
     return expansion_dict
+
+
+def node_teacher_disciple_degree(dg):
+    if type(dg) != nx.DiGraph:
+        raise Exception("dg is not DiGraph")
+    unweight_dg = dg.copy()
+    for edge in unweight_dg.edges.data():
+        edge["weight"] = 1
+    g = unweight_dg.to_undirected()
+    in_degrees = dict(unweight_dg.in_degree)
+    out_degrees = dict(unweight_dg.out_degree)
+    nodes = list(unweight_dg.nodes)
+    degrees = dict(g.degree)
+    content = {}
+    for node in nodes:
+        bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
+        content[node] = (degrees[node] - bidirect) / degrees[node]
+    return content
+
+
+def node_colleague_degree(dg):
+    if type(dg) != nx.DiGraph:
+        raise Exception("dg is not DiGraph")
+    unweight_dg = to_unweighted(dg)
+    g = unweight_dg.to_undirected()
+    in_degrees = dict(unweight_dg.in_degree)
+    out_degrees = dict(unweight_dg.out_degree)
+    nodes = list(unweight_dg.nodes)
+    degrees = dict(g.degree)
+    content = {}
+    for node in nodes:
+        bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
+        content[node] = bidirect / degrees[node]
+    return content
+
+
+def node_unidirect_density(dg):
+    if type(dg) != nx.DiGraph:
+        raise Exception("dg is not DiGraph")
+    unweight_dg = to_unweighted(dg)
+    g = unweight_dg.to_undirected()
+    in_degrees = dict(unweight_dg.in_degree)
+    out_degrees = dict(unweight_dg.out_degree)
+    nodes = list(unweight_dg.nodes)
+    degrees = dict(g.degree)
+    content = {}
+    for node in nodes:
+        bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
+        content[node] = (degrees[node] - bidirect) / (2 * len(nodes))
+    return content
+
+
+def node_bidirect_density(dg):
+    if type(dg) != nx.DiGraph:
+        raise Exception("dg is not DiGraph")
+    unweight_dg = to_unweighted(dg)
+    g = unweight_dg.to_undirected()
+    in_degrees = dict(unweight_dg.in_degree)
+    out_degrees = dict(unweight_dg.out_degree)
+    nodes = list(unweight_dg.nodes)
+    degrees = dict(g.degree)
+    content = {}
+    for node in nodes:
+        bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
+        content[node] = bidirect / (2 * len(nodes))
+    return content

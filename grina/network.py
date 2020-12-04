@@ -48,3 +48,36 @@ def bidirect_density(dg):
     diff = i_adj * i_adj.T
     bidirect = np.count_nonzero(diff) / 2
     return bidirect / all_relations
+
+
+def components_density(g):
+    if type(g) != nx.Graph:
+        raise Exception("g is not Graph type.")
+    component_list = [
+        g.subgraph(c)
+        for c in sorted(nx.connected_components(g),
+                        key=len,
+                        reverse=True)
+    ]
+    densities = []
+    for component in component_list:
+        densities.append(nx.density(component))
+    return densities
+
+
+def components_size(g):
+    if type(g) != nx.Graph:
+        raise Exception("g is not Graph type.")
+    component_list = [
+        g.subgraph(c)
+        for c in sorted(nx.connected_components(g),
+                        key=len,
+                        reverse=True)
+    ]
+    sizes = []
+    for component in component_list:
+        sizes.append(component.number_of_nodes())
+    return sizes
+
+
+

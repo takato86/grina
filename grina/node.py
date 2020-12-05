@@ -3,6 +3,14 @@ from networkx.algorithms import chains, components
 
 
 def to_unweighted(dg):
+    """ネットワークの重みを全て1に変換する。
+
+    Args:
+        dg (nx.DiGraph or nx.Graph): 有向グラフ or 無向グラフ
+
+    Returns:
+        nx.DiGraph or nx.Graph: 有向グラフ or 無向グラフ
+    """
     unweight_dg = dg.copy()
     edges = []
     for edge in unweight_dg.edges():
@@ -14,14 +22,38 @@ def to_unweighted(dg):
 
 
 def get_n_entry(dg):
+    """入次数の算出
+
+    Args:
+        dg ([nx.DiGraph]): [description]
+
+    Returns:
+        [dict]: [description]
+    """
     return dict(dg.in_degree())
 
 
 def get_n_exit(dg):
+    """出次数の算出
+
+    Args:
+        dg ([nx.DiGraph]): [description]
+
+    Returns:
+        [dict]: [description]
+    """
     return dict(dg.out_degree())
 
 
 def get_diff_entry_exit(dg):
+    """入次数と出次数の差の算出
+    |入次数-出次数|で計算
+    Args:
+        dg ([nx.DiGraph]): [description]
+
+    Returns:
+        [dict]: [description]
+    """
     diff_dict = {}
     out_degrees = dict(dg.out_degree())
     # print("node\t\t:absolute diff")
@@ -33,6 +65,14 @@ def get_diff_entry_exit(dg):
 
 
 def get_gatekeeper_degree(dg):
+    """ゲートキーパー度
+    入次数×出次数で計算
+    Args:
+        dg ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     gatekeeper_dgree_dict = {}
     out_degrees = dict(dg.out_degree())
     # print("node\t\t:degree gatekeeper")
@@ -64,7 +104,7 @@ def calc_eigen_centralities(dg):
 
 def get_elongation(dg):
     """伸長度の算出
-    
+    任意ノードから遷移できる最大の長さ
     Arguments:
         dg {DirectedGraph} -- 有向グラフインスタンス
     
@@ -73,17 +113,18 @@ def get_elongation(dg):
     """
     elogation_dict = {}
     for source, target_dict in nx.shortest_path_length(dg):
-        max_length = 0
-        for target, length in target_dict.items():
-            if max_length < length:
-                max_length = length
-        elogation_dict[source] = max_length
+        # max_length = 0
+        # for length in target_dict.values():
+        #     if max_length < length:
+        #         max_length = length
+        # elogation_dict[source] = max_length
+        elogation_dict[source] = max(list(target_dict.values))
     return elogation_dict
 
 
 def get_degree_expansion(dg):
     """拡張度の算出
-    
+    任意ノードから最短経路の終端ノード数
     Arguments:
         dg {DirectedGraph} -- 有向グラフのインスタンス
     
@@ -97,6 +138,21 @@ def get_degree_expansion(dg):
 
 
 def node_teacher_disciple_degree(dg):
+    """師弟度
+    あるノードの全関係に対する単方向の関係の割合
+    単方向の関係数 = 2 * 全関係数 - (入次数 + 出次数)
+    全関係数は無向グラフに変換したときの全エッジ数。
+    この式は双方向の関係数を算出して、全関係数から双方向の関係数を減ずることで求めることができる。
+
+    Args:
+        dg (nx.DiGraph): 有向グラフ
+
+    Raises:
+        Exception: クラスチェック
+
+    Returns:
+        dict: ノードごとの師弟度辞書
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph")
     unweight_dg = dg.copy()
@@ -115,6 +171,21 @@ def node_teacher_disciple_degree(dg):
 
 
 def node_colleague_degree(dg):
+    """同僚度
+    あるノードの全関係に対する双方向の関係の割合
+    双方向の関係数 = (入次数 + 出次数) - 全関係数
+    全関係数は全ての接続が単方向だった場合の関係数とみなせ、
+    接続されているエッジ数の合計から全単方向の関係数を減ずることで求めている。    
+
+    Args:
+        dg (nx.DiGraph): 有向グラフ
+
+    Raises:
+        Exception: クラスチェック
+
+    Returns:
+        dict: ノードごとの同僚度
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph")
     unweight_dg = to_unweighted(dg)
@@ -131,6 +202,17 @@ def node_colleague_degree(dg):
 
 
 def node_unidirect_density(dg):
+    """単方向密度
+    単方向の接続数 / 完全グラフとした時の接続数
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        dict: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph")
     unweight_dg = to_unweighted(dg)
@@ -147,6 +229,17 @@ def node_unidirect_density(dg):
 
 
 def node_bidirect_density(dg):
+    """双方向密度
+    単方向の接続数 / 完全グラフとした時の接続数
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        dict: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph")
     unweight_dg = to_unweighted(dg)

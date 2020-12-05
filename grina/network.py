@@ -3,6 +3,22 @@ import numpy as np
 
 
 def teacher_disciple_degree(dg):
+    """師弟度
+    全関係数に対する単方向の接続数
+    全関係数は無向グラフの全エッジ数として算出
+    重みを全て1に変換後、
+    隣接行列Aに変換して、A - A.T差分を算出し、非ゼロの要素数をカウント。
+    
+    i->jの関係からj->iの関係を減じて、0以上であれば単方向の接続数を求めることができる。
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        dict: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph type.")
     g = dg.to_undirected()
@@ -15,6 +31,23 @@ def teacher_disciple_degree(dg):
 
 
 def colleague_degree(dg):
+    """同僚度
+    全関係数に対する単方向の接続数
+    全関係数は無向グラフの全エッジ数として算出
+    重みを全て1に変換後、
+    隣接行列Aに変換して、A ○ A.T（アダマール積）を算出し、非ゼロの要素数をカウント。
+    
+    i->jの関係とj->iの関係の両方が存在すれば、1になるので、双方向の接続数を求めることができる。
+
+    Args:
+        dg (nx.DiGraph)): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        float: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph type.")
     g = dg.to_undirected()
@@ -27,6 +60,17 @@ def colleague_degree(dg):
 
 
 def unidirect_density(dg):
+    """単方向密度
+    師弟度の分母を完全グラフの場合のエッジ数にしたもの
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        float: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph type.")
     N = len(dg.nodes)
@@ -39,6 +83,17 @@ def unidirect_density(dg):
 
 
 def bidirect_density(dg):
+    """双方向密度
+    同僚度の分母を完全グラフの場合のエッジ数にしたもの
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        float: [description]
+    """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph type.")
     N = len(dg.nodes)
@@ -51,6 +106,17 @@ def bidirect_density(dg):
 
 
 def components_density(g):
+    """コンポーネントごとのネットワーク密度
+
+    Args:
+        g (nx.Graph)): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        list: [description]
+    """
     if type(g) != nx.Graph:
         raise Exception("g is not Graph type.")
     component_list = [
@@ -66,6 +132,17 @@ def components_density(g):
 
 
 def components_size(g):
+    """コンポーネントごとのネットワークサイズ
+
+    Args:
+        g ([type]): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        list: [description]
+    """
     if type(g) != nx.Graph:
         raise Exception("g is not Graph type.")
     component_list = [

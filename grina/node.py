@@ -118,7 +118,7 @@ def get_elongation(dg):
         #     if max_length < length:
         #         max_length = length
         # elogation_dict[source] = max_length
-        elogation_dict[source] = max(list(target_dict.values))
+        elogation_dict[source] = max(list(target_dict.values()))
     return elogation_dict
 
 
@@ -155,9 +155,7 @@ def node_teacher_disciple_degree(dg):
     """
     if type(dg) != nx.DiGraph:
         raise Exception("dg is not DiGraph")
-    unweight_dg = dg.copy()
-    for edge in unweight_dg.edges.data():
-        edge["weight"] = 1
+    unweight_dg = to_unweighted(dg)
     g = unweight_dg.to_undirected()
     in_degrees = dict(unweight_dg.in_degree)
     out_degrees = dict(unweight_dg.out_degree)

@@ -156,5 +156,36 @@ def components_size(g):
         sizes.append(component.number_of_nodes())
     return sizes
 
+def get_n_bidirect_connect(dg):
+    checked_bidirect_edges = []
+    for source, target in dg.out_edges:
+        for ttarget, _ in dg.adj[target].items():
+            if source == ttarget and\
+               (target, source) not in checked_bidirect_edges:
+                checked_bidirect_edges.append((source, target))
+    return len(checked_bidirect_edges)
+
+
+def get_n_unidirect_connect(dg):
+    counter = 0
+    for source, target in dg.out_edges:
+        counter += 1
+        for ttarget, _ in dg.adj[target].items():
+            if source == ttarget:
+                counter -= 1
+                break
+    return counter
+
+
+def calc_network_density(dg):
+    n_nodes = len(dg.nodes)
+    n_edges = len(dg.edges)
+    if n_nodes > 1:
+        if(type(dg) == nx.DiGraph):   
+            return n_edges / (n_nodes * (n_nodes - 1))
+        else:
+            return 2 * n_edges / (n_nodes * (n_nodes - 1))
+    else:
+        return 0
 
 

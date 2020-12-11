@@ -3,4 +3,4 @@ numpy
 networkx
 grina
 matplotlib
-
+scipy

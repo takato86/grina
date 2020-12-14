@@ -1,25 +1,7 @@
 import networkx as nx
 from networkx.algorithms import chains, components
-
-
-def to_unweighted(dg):
-    """ネットワークの重みを全て1に変換する。
-
-    Args:
-        dg (nx.DiGraph or nx.Graph): 有向グラフ or 無向グラフ
-
-    Returns:
-        nx.DiGraph or nx.Graph: 有向グラフ or 無向グラフ
-    """
-    unweight_dg = dg.copy()
-    edges = []
-    for edge in unweight_dg.edges():
-        edges.append(
-            (edge[0], edge[1], {'weight': 1})
-        )
-    unweight_dg.update(edges=edges)
-    return unweight_dg
-
+import numpy as np
+from grina.core import to_unweighted
 
 def get_n_entry(dg):
     """入次数の算出
@@ -64,22 +46,55 @@ def get_diff_entry_exit(dg):
     return diff_dict
 
 
-def get_gatekeeper_degree(dg):
-    """ゲートキーパー度
-    入次数×出次数で計算
+def get_out_in_degree(dg):
+    """出次数 - 入次数で算出
+
     Args:
         dg ([type]): [description]
 
     Returns:
         [type]: [description]
     """
-    gatekeeper_dgree_dict = {}
+    out_in_dict = {}
+    out_degrees = dict(dg.out_degree())
+    # print("node\t\t:absolute diff")
+    for node, in_degree in dg.in_degree():
+        diff = out_degrees[node] - in_degree
+        out_in_dict[node] = diff
+    return out_in_dict
+
+
+def get_gatekeeper_degree(dg):
+    """ゲートキーパー度
+    (入次数×出次数)**0.5で計算
+    Args:
+        dg ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    gatekeeper_dgree_dict = {
+        k: np.sqrt(v) for k, v in get_inxout_degree(dg)
+    }
+    return gatekeeper_dgree_dict
+
+
+def get_inxout_degree(dg):
+    """入次数X出次数で計算
+
+    Args:
+        dg (nx.DiGraph): [description]
+
+    Returns:
+        dict: [description]
+    """
+    inxout_degree_dict = {}
     out_degrees = dict(dg.out_degree())
     # print("node\t\t:degree gatekeeper")
     for node, in_degree in dg.in_degree():
-        gatekeeper = in_degree * out_degrees[node]
-        gatekeeper_dgree_dict[node] = gatekeeper
-    return gatekeeper_dgree_dict
+        inxout_degree = in_degree * out_degrees[node]
+        inxout_degree_dict[node] = inxout_degree
+    return inxout_degree_dict
 
 
 def calc_degree_centralities(dg):

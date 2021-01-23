@@ -1,7 +1,7 @@
 import networkx as nx
-from networkx.algorithms import chains, components
 import numpy as np
 from grina.core import to_unweighted
+
 
 def get_n_entry(dg):
     """入次数の算出
@@ -74,8 +74,9 @@ def get_gatekeeper_degree(dg):
         [type]: [description]
     """
     gatekeeper_dgree_dict = {
-        k: np.sqrt(v) for k, v in get_inxout_degree(dg)
+        k: np.sqrt(v) for k, v in get_inxout_degree(dg).items()
     }
+    
     return gatekeeper_dgree_dict
 
 

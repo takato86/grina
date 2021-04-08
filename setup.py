@@ -5,7 +5,7 @@ requires = ["networkx>=2.4"]
 
 setup(
     name='grina',
-    version='0.1',
+    version='0.2',
     description="GRIps Network Analysis module.",
     url='',
     author='tokudo',

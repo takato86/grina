@@ -74,7 +74,7 @@ def get_gatekeeper_degree(dg):
         [type]: [description]
     """
     gatekeeper_dgree_dict = {
-        k: np.sqrt(v) for k, v in get_inxout_degree(dg)
+        k: np.sqrt(v) for k, v in get_inxout_degree(dg).items()
     }
     return gatekeeper_dgree_dict
 
@@ -157,7 +157,7 @@ def node_teacher_disciple_degree(dg):
     あるノードの全関係に対する単方向の関係の割合
     単方向の関係数 = 2 * 全関係数 - (入次数 + 出次数)
     全関係数は無向グラフに変換したときの全エッジ数。
-    この式は双方向の関係数を算出して、全関係数から双方向の関係数を減ずることで求めることができる。
+    全関係数から双方向の関係数を減ずることで求めることができる。
 
     Args:
         dg (nx.DiGraph): 有向グラフ
@@ -179,7 +179,10 @@ def node_teacher_disciple_degree(dg):
     content = {}
     for node in nodes:
         bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
-        content[node] = (degrees[node] - bidirect) / degrees[node]
+        if degrees[node] > 0:
+            content[node] = (degrees[node] - bidirect) / degrees[node]
+        else:
+            content[node] = 0
     return content
 
 
@@ -210,7 +213,10 @@ def node_colleague_degree(dg):
     content = {}
     for node in nodes:
         bidirect = in_degrees[node] + out_degrees[node] - degrees[node]
-        content[node] = bidirect / degrees[node]
+        if degrees[node] > 0:
+            content[node] = bidirect / degrees[node]
+        else:
+            content[node] = 0
     return content
 
 

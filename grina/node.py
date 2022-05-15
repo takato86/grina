@@ -1,5 +1,9 @@
 import networkx as nx
 import numpy as np
+try:
+    import cugraph as cnx
+except Exception:
+    import networkx as cnx
 from grina.core import to_unweighted
 
 
@@ -109,12 +113,12 @@ def calc_close_centralities(dg):
 
 
 def calc_between_centralities(dg):
-    between_centers = nx.betweenness_centrality(dg)
+    between_centers = cnx.betweenness_centrality(dg)
     return {k:v for k,v in sorted(between_centers.items(), key=lambda x:x[1], reverse=True)}
 
 
 def calc_eigen_centralities(dg):
-    eigen_centers = nx.eigenvector_centrality_numpy(dg)
+    eigen_centers = nx.eigenvector_centrality(dg, max_iter=1000)
     return {k:v for k,v in sorted(eigen_centers.items(), key=lambda x:x[1], reverse=True)}
 
 

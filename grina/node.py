@@ -5,6 +5,7 @@ try:
 except Exception:
     import networkx as cnx
 from grina.core import to_unweighted
+import igraph as ig
 
 
 def get_n_entry(dg):
@@ -108,8 +109,10 @@ def calc_degree_centralities(dg):
 
 
 def calc_close_centralities(dg):
-    close_centers = nx.closeness_centrality(dg)
-    return {k:v for k,v in sorted(close_centers.items(), key=lambda x:x[1], reverse=True)}
+    dg_ig = ig.Graph.from_networkx(dg)
+    keys = dg_ig.vs["_nx_name"]
+    close_centers = [(key, value) for key, value in zip(keys, dg_ig.closeness())]
+    return {k:v for k,v in sorted(close_centers, key=lambda x:x[1], reverse=True)}
 
 
 def calc_between_centralities(dg):
@@ -132,13 +135,15 @@ def get_elongation(dg):
         dict -- ノードIDと伸長度の辞書
     """
     elogation_dict = {}
-    for source, target_dict in nx.shortest_path_length(dg):
-        # max_length = 0
-        # for length in target_dict.values():
-        #     if max_length < length:
-        #         max_length = length
-        # elogation_dict[source] = max_length
-        elogation_dict[source] = max(list(target_dict.values()))
+    dg_ig = ig.Graph.from_networkx(dg)
+
+    for vertex in dg_ig.vs:
+        shortest_path_lengths = [
+            len(path)
+            for path in vertex.get_shortest_paths(output="vpath")
+        ]
+        elogation_dict[vertex["_nx_name"]] = max(shortest_path_lengths)
+
     return elogation_dict
 
 
@@ -152,8 +157,11 @@ def get_degree_expansion(dg):
         dict -- ノードIDと拡張度の辞書
     """
     expansion_dict = {}
-    for node in dg.nodes():
-        expansion_dict[node] = len(nx.shortest_path(dg, node))-1
+    dg_ig = ig.Graph.from_networkx(dg)
+
+    for vertex in dg_ig.vs:
+        expansion_dict[vertex["_nx_name"]] = len(vertex.get_shortest_paths(output="vpath")) - 1
+
     return expansion_dict
 
 

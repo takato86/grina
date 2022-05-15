@@ -13,3 +13,4 @@ def to_unweighted(dg):
         )
     unweight_dg.update(edges=edges)
     return unweight_dg
+

@@ -15,6 +15,6 @@ setup(
     packages=['grina'],
     install_requires=requires,
     classifiers=[
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.8',
     ],
 )

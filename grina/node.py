@@ -1,11 +1,17 @@
+import logging
 import networkx as nx
 import numpy as np
-try:
-    import cugraph as cnx
-except Exception:
-    import networkx as cnx
 from grina.core import to_unweighted
 import igraph as ig
+
+logger = logging.getLogger("grina")
+
+try:
+    import cugraph as cnx
+    logger.info("Imported cugraph!")
+except Exception:
+    import networkx as cnx
+    logger.info("Imported networkx.")
 
 
 def get_n_entry(dg):

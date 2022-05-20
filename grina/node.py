@@ -2,12 +2,13 @@ import logging
 import networkx as nx
 import numpy as np
 from grina.core import to_unweighted
-from grina.parallel import get_max_shortest_path_length, get_n_shortest_paths
+from grina.parallel import expansion_elongation, wrapper4parallel
 import igraph as ig
 import multiprocessing
 
 logger = logging.getLogger("grina")
 N_PROCESSES = multiprocessing.cpu_count()
+THRESHOLD_NODES = 3
 logger.info("This module can use {} processes".format(N_PROCESSES))
 
 try:
@@ -135,30 +136,7 @@ def calc_eigen_centralities(dg):
     return {k:v for k,v in sorted(eigen_centers.items(), key=lambda x:x[1], reverse=True)}
 
 
-def get_elongation(dg):
-    """伸長度の算出
-    任意ノードから遷移できる最大の長さ
-    Arguments:
-        dg {DirectedGraph} -- 有向グラフインスタンス
-    
-    Returns:
-        dict -- ノードIDと伸長度の辞書
-    """
-    edge_list_df = nx.to_pandas_edgelist(dg)
-    graph_type = type(dg)
-    nodes = [str(n) for n in dg.nodes]
-    arguments = [(edge_list_df, graph_type, node) for node in nodes]
-    res = []
-
-    with multiprocessing.Pool(N_PROCESSES) as p:
-        for argument in arguments:
-            res.append(p.apply(get_max_shortest_path_length, argument))
-
-    elongation_dict = {vertex: val for vertex, val in res}
-    return elongation_dict
-
-
-def get_degree_expansion(dg):
+def get_degree_expansion_elongation(dg):
     """拡張度の算出
     任意ノードから最短経路の終端ノード数
     Arguments:
@@ -167,18 +145,17 @@ def get_degree_expansion(dg):
     Returns:
         dict -- ノードIDと拡張度の辞書
     """
-    edge_list_df = nx.to_pandas_edgelist(dg)
-    graph_type = type(dg)
     nodes = [str(n) for n in dg.nodes]
-    arguments = [(edge_list_df, graph_type, node) for node in nodes]
+    logger.debug(f"parallelization by #cpus: {N_PROCESSES}")
+    arguments = [(expansion_elongation, (dg, node)) for node in nodes]
     res = []
 
     with multiprocessing.Pool(N_PROCESSES) as p:
-        for argument in arguments:
-            res.append(p.apply(get_n_shortest_paths, argument))
-
-    expansion_dict = {vertex: val for vertex, val in res}
-    return expansion_dict
+        res = p.map(wrapper4parallel, arguments)
+        
+    expansion_dict = {vertex: expansion for vertex, expansion, _ in res}
+    elongation_dict = {vertex: elongation for vertex, _, elongation in res}
+    return (expansion_dict, elongation_dict)
 
 
 def node_teacher_disciple_degree(dg):

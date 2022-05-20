@@ -1,6 +1,6 @@
 from setuptools import setup
 
-requires = ["networkx>=2.4"]
+requires = ["networkx>=2.2", "wheel"]
 
 
 setup(

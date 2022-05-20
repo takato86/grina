@@ -1,6 +1,6 @@
 pandas>=1.1.5
 numpy>=1.19.4
-networkx>=2.5
+networkx>=2.2
 matplotlib>=3.3.3
 scipy>=1.5.4
 igraph>=0.9.10

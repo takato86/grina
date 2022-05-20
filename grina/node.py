@@ -2,9 +2,13 @@ import logging
 import networkx as nx
 import numpy as np
 from grina.core import to_unweighted
+from grina.parallel import get_max_shortest_path_length, get_n_shortest_paths
 import igraph as ig
+import multiprocessing
 
 logger = logging.getLogger("grina")
+N_PROCESSES = multiprocessing.cpu_count()
+logger.info("This module can use {} processes".format(N_PROCESSES))
 
 try:
     import cugraph as cnx
@@ -140,17 +144,18 @@ def get_elongation(dg):
     Returns:
         dict -- ノードIDと伸長度の辞書
     """
-    elogation_dict = {}
-    dg_ig = ig.Graph.from_networkx(dg)
+    edge_list_df = nx.to_pandas_edgelist(dg)
+    graph_type = type(dg)
+    nodes = [str(n) for n in dg.nodes]
+    arguments = [(edge_list_df, graph_type, node) for node in nodes]
+    res = []
 
-    for vertex in dg_ig.vs:
-        shortest_path_lengths = [
-            len(path)
-            for path in vertex.get_shortest_paths(output="vpath")
-        ]
-        elogation_dict[vertex["_nx_name"]] = max(shortest_path_lengths)
+    with multiprocessing.Pool(N_PROCESSES) as p:
+        for argument in arguments:
+            res.append(p.apply(get_max_shortest_path_length, argument))
 
-    return elogation_dict
+    elongation_dict = {vertex: val for vertex, val in res}
+    return elongation_dict
 
 
 def get_degree_expansion(dg):
@@ -162,12 +167,17 @@ def get_degree_expansion(dg):
     Returns:
         dict -- ノードIDと拡張度の辞書
     """
-    expansion_dict = {}
-    dg_ig = ig.Graph.from_networkx(dg)
+    edge_list_df = nx.to_pandas_edgelist(dg)
+    graph_type = type(dg)
+    nodes = [str(n) for n in dg.nodes]
+    arguments = [(edge_list_df, graph_type, node) for node in nodes]
+    res = []
 
-    for vertex in dg_ig.vs:
-        expansion_dict[vertex["_nx_name"]] = len(vertex.get_shortest_paths(output="vpath")) - 1
+    with multiprocessing.Pool(N_PROCESSES) as p:
+        for argument in arguments:
+            res.append(p.apply(get_n_shortest_paths, argument))
 
+    expansion_dict = {vertex: val for vertex, val in res}
     return expansion_dict
 
 

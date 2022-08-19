@@ -1,3 +1,4 @@
+import itertools
 import logging
 import networkx as nx
 import numpy as np
@@ -126,9 +127,44 @@ def calc_close_centralities(dg):
     return {k:v for k,v in sorted(close_centers, key=lambda x:x[1], reverse=True)}
 
 
-def calc_between_centralities(dg):
-    between_centers = cnx.betweenness_centrality(dg)
+def calc_between_centralities(dg, processes=None):
+    between_centers = betweenness_centrality_parallel(dg, processes)
     return {k:v for k,v in sorted(between_centers.items(), key=lambda x:x[1], reverse=True)}
+
+
+def betweenness_centrality_parallel(G, processes=None):
+    """Parallel betweenness centrality  function"""
+    def chunks(l, n):
+        """Divide a list of nodes `l` in `n` chunks"""
+        l_c = iter(l)
+        while 1:
+            x = tuple(itertools.islice(l_c, n))
+            if not x:
+                return
+            yield x
+
+    p = multiprocessing.Pool(processes=processes)
+    node_divisor = len(p._pool) * 4
+    node_chunks = list(chunks(G.nodes(), G.order() // node_divisor))
+    num_chunks = len(node_chunks)
+    bt_sc = p.starmap(
+        nx.betweenness_centrality_subset,
+        zip(
+            [G] * num_chunks,
+            node_chunks,
+            [list(G)] * num_chunks,
+            [True] * num_chunks,
+            [None] * num_chunks,
+        ),
+    )
+
+    # Reduce the partial solutions
+    bt_c = bt_sc[0]
+    for bt in bt_sc[1:]:
+        for n in bt:
+            bt_c[n] += bt[n]
+    return bt_c
+    
 
 
 def calc_eigen_centralities(dg):

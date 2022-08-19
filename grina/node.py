@@ -1,3 +1,4 @@
+import os
 import itertools
 import logging
 import networkx as nx
@@ -128,7 +129,10 @@ def calc_close_centralities(dg):
 
 
 def calc_between_centralities(dg, processes=None):
-    between_centers = betweenness_centrality_parallel(dg, processes)
+    if os.cpu_count() * 4 < len(dg.nodes()):
+        between_centers = betweenness_centrality_parallel(dg, processes)
+    else:
+        between_centers = nx.betweenness_centrality(dg)
     return {k:v for k,v in sorted(between_centers.items(), key=lambda x:x[1], reverse=True)}
 
 

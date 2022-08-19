@@ -152,7 +152,7 @@ def get_degree_expansion_elongation(dg):
 
     with multiprocessing.Pool(N_PROCESSES) as p:
         res = p.map(wrapper4parallel, arguments)
-        
+
     expansion_dict = {vertex: expansion for vertex, expansion, _ in res}
     elongation_dict = {vertex: elongation for vertex, _, elongation in res}
     return (expansion_dict, elongation_dict)
